@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+}
+
+@layer components {
+  .label {
+    @apply py-3 px-0 first:pt-0 last:pb-0;
+  }
+
+  .label-text {
+    @apply text-24px font-semibold;
+  }
+
+  .label-text-alt {
+    @apply text-20px font-medium;
+  }
+
+  .label-text-error {
+    @apply text-error;
+  }
+
+  .input, .textarea {
+    @apply rounded-[10px] text-24px focus:border-primary font-medium;
+  }
+
+  .input {
+    @apply h-[60px];
+  }
+
+  .input-bg {
+    @apply pl-[60px] bg-no-repeat bg-[left_18px_top_50%] bg-[length:24px] #{!important};
+  }
+
+  .textarea {
+    @apply min-h-[60px];
+  }
+
+  .btn {
+    @apply min-h-[60px] rounded-[10px] text-24px font-bold normal-case border-2 py-1;
+  }
+
+  .btn-sm {
+    @apply min-h-[50px] text-18px font-medium
+  }
+
+  .btn-white {
+    @apply bg-white text-black border-transparent;
+  }
+
+  .btn-square {
+    @apply w-[60px] h-[60px] rounded-[10px];
+  }
+
+  .radio-primary {
+    @apply border-2 border-gray4 hover:border-gray3 focus:border-gray3 [&:checked]:border-primary [&:checked]:hover:border-primary [&:checked]:bg-none [&:checked]:bg-primary [&:checked]:focus:bg-primary [&:checked]:hover:bg-primary;
+  }
+
+  .checkbox-primary {
+    @apply border-2 border-gray4 hover:border-gray3 focus:border-gray4
+  }
+
+  .default-empty-bg {
+    @apply bg-[url(@/assets/images/order/food-empty.png)] bg-auto bg-no-repeat bg-center bg-white
+  }
+}
+
+@layer utilities {
+  .flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

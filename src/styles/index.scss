@@ -1,0 +1,73 @@
+@use "animations";
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+:root {
+  --text: #1D1D1D;
+  --white: #fff;
+  --secondary: #FF7731;
+  --primary: #C9202C;
+  --success: #23B862;
+  --gray-3: #828282;
+  --gray-4: #BDBDBD;
+  --tw-ring-color: transparent;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: auto;
+  min-height: 100vh;
+}
+
+html {
+  overflow: hidden;
+}
+
+body {
+  font-size: 16px;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  font-family: "Poppins", sans-serif;
+  color: var(--text);
+  overflow: auto;
+}
+
+:not(.show-scrollbar)::-webkit-scrollbar {
+  display: none;
+}
+
+input:not([type="radio"]):not([type="checkbox"]),
+textarea {
+  &, &:focus {
+    box-shadow: none !important;;
+    outline: 0 !important;
+  }
+}
+
+.modal,
+.modal-box {
+  transition: none;
+}
+
+* {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}
+
+.radio, .checkbox {
+  width: 32px;
+  height: 32px;
+  &, &:focus {
+    --tw-ring-shadow: none;
+    outline: none;
+  }
+
+  @media (min-width: 1800px) {
+    width: 40px;
+    height: 40px;
+  }
+}
