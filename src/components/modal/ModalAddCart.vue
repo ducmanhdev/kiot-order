@@ -106,7 +106,7 @@ const price = computed(() => getPrice('price'));
 
 const checkboxGroupRefs = ref<InstanceType<typeof CheckboxGroup>[] | null>(null);
 const handleValidateAddCart = async () => {
-  let results = await Promise.allSettled(checkboxGroupRefs.value?.map(group => group?.validate()) || []);
+  let results = await Promise.allSettled([checkboxGroupRefs.value || []].flat().map(group => group?.validate()) || []);
   results = results.filter(result => result.status === 'rejected');
   if (!results.length) return true;
   results.forEach(result => {
@@ -134,14 +134,16 @@ const show = (value: CategoryItem) => {
     if (!value) {
       throw new Error('Param value not found!')
     }
-
-    const modifier = (value.modifier || []).map(({value, ...item}) => ({...item}));
+    if (!value) {
+      throw new Error('Param value not found!')
+    }
+    const cloneValue = JSON.parse(JSON.stringify(value));
     data.value = {
-      ...value,
-      quantity: 1,
-      item_variant: value.item_variants[0],
-      modifier: modifier,
-      note: '',
+      ...cloneValue,
+      quantity: cloneValue.quantity || 1,
+      item_variant: cloneValue.item_variant || cloneValue.item_variants[0],
+      modifier: cloneValue.modifier || [],
+      note: cloneValue.note || '',
     };
   } catch (error) {
     handleError({error});
