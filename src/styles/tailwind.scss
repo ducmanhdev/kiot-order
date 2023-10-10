@@ -54,6 +54,10 @@
     @apply w-[60px] h-[60px] rounded-[10px];
   }
 
+  .btn-gray {
+    @apply bg-[#B3B3B3] disabled:bg-[#B3B3B3] border-[#B3B3B3] disabled:border-[#B3B3B3] text-white disabled:text-white;
+  }
+
   .radio-primary {
     @apply border-2 border-gray4 hover:border-gray3 focus:border-gray3 [&:checked]:border-primary [&:checked]:hover:border-primary [&:checked]:bg-none [&:checked]:bg-primary [&:checked]:focus:bg-primary [&:checked]:hover:bg-primary;
   }

@@ -1,15 +1,15 @@
 <template>
   <section class="h-screen flex flex-col">
-    <div class="shrink-0 bg-primary text-white px-[120px] py-5 relative text-center">
+    <div class="shrink-0 bg-primary text-white px-10 2xl:px-[60px] py-4 2xl:py-5 relative text-center">
       <button
           type="button"
-          class="absolute top-1/2 -translate-y-1/2 left-[60px]"
+          class="absolute top-1/2 -translate-y-1/2 left-10 2xl:left-[60px]"
           @click="handleBack"
           title="back"
       >
-        <img src="@/assets/images/icon-arrow-left-white.svg" alt="">
+        <img class="w-10 h-auto 2xl:w-[50px]" src="@/assets/images/icon-arrow-left-white.svg" alt="">
       </button>
-      <h2 class="font-bold text-40px">{{ title }}</h2>
+      <h2 class="font-bold text-32px 2xl:text-40px">{{ title }}</h2>
     </div>
     <div class="grow overflow-y-auto">
       <slot></slot>

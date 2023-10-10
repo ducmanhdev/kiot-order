@@ -1,24 +1,50 @@
-import {computed, ref} from 'vue';
+import {ref} from 'vue';
 import {defineStore} from 'pinia';
 import {gapMiniAppController} from '@/sdk';
 import FormatHelper from "@/utils/formatHelper";
-import Pax from 'pax-ts';
+import { Gap } from "gap-nodejs-sdk";
+import { PaxPaymentClient } from "gap-payment-pax-provider";
+import { GapPaymentClientDriver } from "gap-nodejs-sdk/dist/payment/type";
 
-export type DeviceNetwork = {
+export const DEFAULT_PAX_PORT = 10009;
+export const DEFAULT_PRINTER_NETWORK_PORT = 9100;
+
+export const DEVICE_TYPES = {
+    PAX: 'pax',
+    NETWORK: 'network',
+    USB: 'usb',
+    BLUETOOTH: 'bluetooth',
+} as const;
+export type DeviceTypes = typeof DEVICE_TYPES[keyof typeof DEVICE_TYPES];
+
+export type PaxDevice = {
+    ip: string;
+    port: number;
+    SN?: string;
+};
+export type PrinterNetworkDevice = {
+    type: 'network';
     ip: string;
     port: number;
 };
-export type Device = {
-    name: string;
-    serialNumber?: string;
-    ip: string;
-    port: number;
-    isConnected: boolean;
+export type PrinterUSBDevice = {
+    type: 'usb';
+    deviceName: string;
+    productId: string;
+    vendorId: string;
 };
+export type PrinterBluetoothDevice = {
+    type: 'bluetooth';
+    deviceName: string;
+    address: string;
+};
+export type PrinterDevice = PrinterNetworkDevice | PrinterUSBDevice | PrinterBluetoothDevice;
+export type Device = PaxDevice | PrinterDevice;
 export type SaveConfigRequest = {
     key: string;
-    value: DeviceNetwork | null,
+    value: Device | null,
 }
+
 export const useConnectStore = defineStore('connectStore', () => {
     // UTILS
     const saveConfig = async ({key, value}: SaveConfigRequest) => {
@@ -36,29 +62,22 @@ export const useConnectStore = defineStore('connectStore', () => {
         });
     }
     const getConfig = (key: string) => {
-        return new Promise<DeviceNetwork | null>(async (resolve) => {
+        return new Promise<Device | null>(async (resolve) => {
             try {
-                const paxConfigStorageItem = FormatHelper.tryParseJson(
+                const configStorageItem = FormatHelper.tryParseJson(
                     await gapMiniAppController.instance.getStorageItem({key})
                 );
-                const localStoragePaxConfig = FormatHelper.tryParseJson(localStorage.getItem(key));
-                const config = {
-                    ip: paxConfigStorageItem?.value?.ip || localStoragePaxConfig?.ip || '',
-                    port: paxConfigStorageItem?.value?.port || localStoragePaxConfig?.port || '',
-                }
-                if (!config.ip || !config.port) {
-                    resolve(null);
-                }
-                resolve(config);
+                const localStorageConfig = FormatHelper.tryParseJson(localStorage.getItem(key));
+                resolve(configStorageItem?.value || localStorageConfig);
             } catch (error) {
                 resolve(null);
             }
         })
     }
-    const pingNetworkDevice = (config: DeviceNetwork) => {
+    const pingNetworkDevice = (config: Device) => {
         return new Promise(async (resolve, reject) => {
             try {
-                const res = await gapMiniAppController.instance.pingNetworkDevice(config);
+                const res = await gapMiniAppController.instance.pingNetworkDevice(config as PaxDevice | PrinterNetworkDevice);
                 const pingNetworkStatus = FormatHelper.tryParseJson(res);
                 if (!pingNetworkStatus || !pingNetworkStatus?.data) {
                     throw new Error(`Can't ping network`)
@@ -69,7 +88,7 @@ export const useConnectStore = defineStore('connectStore', () => {
             }
         });
     }
-    const validateNetworkDevice = (config: DeviceNetwork) => {
+    const validateNetworkDevice = (config: PaxDevice) => {
         return new Promise(async (resolve, reject) => {
             try {
                 if (!config.ip || !config.port) {
@@ -85,11 +104,11 @@ export const useConnectStore = defineStore('connectStore', () => {
 
     // PAX
     const PAX_CONFIG_KEY = 'PAX_CONFIG';
-    const pax = ref<Pax | null>();
-    const paxConfig = ref<DeviceNetwork | null>(null);
-    const isPaxConnected = computed(() => paxConfig.value?.ip && paxConfig.value?.port);
-    const setPaxConfig = async (config: DeviceNetwork) => {
+    const paxConfig = ref<PaxDevice | null>(null);
+    const isPaxConnected = ref(false);
+    const setPaxConfig = async (config: PaxDevice) => {
         paxConfig.value = {...config};
+        isPaxConnected.value = true;
         await saveConfig({
             key: PAX_CONFIG_KEY,
             value: paxConfig.value,
@@ -97,18 +116,25 @@ export const useConnectStore = defineStore('connectStore', () => {
     };
     const clearPaxConfig = () => {
         paxConfig.value = null;
+        isPaxConnected.value = false;
+        Gap.Payment = null;
         deleteConfig(PAX_CONFIG_KEY);
-    }
-    const connectPax = (config: DeviceNetwork) => {
+    };
+    const connectPax = (config: PaxDevice) => {
         return new Promise(async (resolve, reject) => {
             try {
                 await validateNetworkDevice(config);
                 await setPaxConfig(config);
-                pax.value = new Pax({
-                    ...config,
-                    miniApp: gapMiniAppController.instance,
-                    timeout: 10000,
-                });
+                if(!Gap.Payment || !(Gap.Payment instanceof PaxPaymentClient)) {
+                    Gap.Payment = new PaxPaymentClient();
+                }
+                Gap.Payment!.paymentClientConfiguration = {
+                    driver: GapPaymentClientDriver.PAX,
+                    configuration: { ip: config.ip, port: config.port }
+                }
+                if(gapMiniAppController.checkGapMiniAppSdkIsReady()) {
+                    Gap.Payment!.initializePaymentClient?.(gapMiniAppController.instance);
+                }
                 resolve(true);
             } catch (error) {
                 clearPaxConfig();
@@ -118,36 +144,37 @@ export const useConnectStore = defineStore('connectStore', () => {
     };
     const initPax = async () => {
         try {
-            const config = await getConfig(PAX_CONFIG_KEY);
-            config && await connectPax(config);
-        } catch (error) { /* empty */ }
+            const config = await getConfig(PAX_CONFIG_KEY) as PaxDevice;
+            if (!config) return;
+            await connectPax(config);
+        } catch (error) { /* empty */
+        }
     };
 
-    // PRINTER_CONFIG_KEY.
+    // PRINTER_CONFIG_KEY
     const PRINTER_CONFIG_KEY = 'PRINTER_CONFIG';
-    const printerConfig = ref<DeviceNetwork | null>(null);
-    const isPrintDeviceConnected = computed(() => printerConfig.value?.ip && printerConfig.value?.port);
-    const setPrinterConfig = async (config: DeviceNetwork) => {
+    const printerConfig = ref<PrinterDevice | null>(null);
+    const isPrinterDeviceConnected = ref(false);
+    const setPrinterConfig = async (config: PrinterDevice) => {
         printerConfig.value = {...config};
+        isPrinterDeviceConnected.value = true;
         await saveConfig({
             key: PRINTER_CONFIG_KEY,
             value: printerConfig.value,
-        })
+        });
     };
     const clearPrinterConfig = () => {
         printerConfig.value = null;
+        isPrinterDeviceConnected.value = false;
         deleteConfig(PRINTER_CONFIG_KEY);
-    }
-    const connectPrinter = (config: DeviceNetwork) => {
+    };
+    const connectPrinter = (config: PrinterDevice) => {
         return new Promise(async (resolve, reject) => {
             try {
-                await pingNetworkDevice(config);
+                if (config.type === 'network') {
+                    await pingNetworkDevice(config);
+                }
                 await setPrinterConfig(config);
-                pax.value = new Pax({
-                    ...config,
-                    miniApp: gapMiniAppController.instance,
-                    timeout: 10000,
-                });
                 resolve(true);
             } catch (error) {
                 reject(error);
@@ -156,10 +183,14 @@ export const useConnectStore = defineStore('connectStore', () => {
     };
     const initPrinter = async () => {
         try {
-            const config = await getConfig(PRINTER_CONFIG_KEY);
-            config && await connectPrinter(config);
-        } catch (error) { /* empty */ }
+            const config = await getConfig(PRINTER_CONFIG_KEY) as PrinterDevice;
+            if (!config) return;
+            await connectPrinter(config);
+        } catch (error) {
+            /* empty */
+        }
     };
+
     const init = () => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -173,12 +204,11 @@ export const useConnectStore = defineStore('connectStore', () => {
     };
 
     return {
-        pax,
         paxConfig,
         isPaxConnected,
         connectPax,
         clearPaxConfig,
-        isPrintDeviceConnected,
+        isPrinterDeviceConnected,
         connectPrinter,
         init,
         printerConfig,

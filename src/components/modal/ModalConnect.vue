@@ -2,91 +2,161 @@
   <modal-base
       ref="modalRef"
       title="Connect with"
-      :width="1000"
+      :width="1154"
       :closable="!isConnectLoading"
   >
     <div class="p-[60px]">
-      <div
-          class="tabs tabs-boxed grid grid-cols-2 mb-6"
-      >
-        <a
-            class="tab tab-lg font-bold text-24px"
-            v-for="tab in LIST_TAB"
-            :key="tab"
+      <div class="btn-group w-full mb-10">
+        <button
+            class="btn btn-gray no-animation flex-1"
             :class="{
-              'tab-active !bg-secondary': tab === tabActive
+              'btn-active': tab === tabActive,
             }"
-            @click="handleChangeTab(tab)"
+            v-for="tab in LIST_TAB"
+            @click.prevent="handleChangeTab(tab)"
         >
           {{ tab }}
-        </a>
+        </button>
       </div>
-      <form class="space-y-5">
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">IP</span>
-          </label>
-          <input
-              type="text"
-              class="input input-bordered w-full"
-              :class="{'input-error': errors.ip}"
-              v-bind="ip"
-          />
-          <label class="label" v-if="errors.ip">
-            <span class="label-text label-text-alt label-text-error">{{ errors.ip }}</span>
-          </label>
-        </div>
-        <div class="form-control" v-if="tabActive === LIST_TAB.PAX">
-          <label class="label">
-            <span class="label-text">PORT</span>
-          </label>
-          <input
-              type="text"
-              class="input input-bordered w-full"
-              :class="{'input-error': errors.port}"
-              v-bind="port"
-          />
-          <label class="label" v-if="errors.port">
-            <span class="label-text label-text-alt label-text-error">{{ errors.port }}</span>
-          </label>
-        </div>
-        <div class="form-control grid grid-cols-2 gap-5">
-          <button type="button" class="btn btn-secondary" @click="handleScan">Scan</button>
+      <form class="space-y-8">
+        <template v-if="tabActive === LIST_TAB.PAX">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">IP</span>
+            </label>
+            <div
+                class="input-connect"
+                :class="{
+                  'input-connect--connected': isCurrentTabConnected
+                }"
+            >
+              <input
+                  type="text"
+                  class="input input-bordered w-full pr-[160px]"
+                  v-model="paxConfig.ip"
+              />
+            </div>
+          </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">PORT</span>
+            </label>
+            <input
+                type="text"
+                class="input input-bordered w-full"
+                v-model="paxConfig.port"
+            />
+          </div>
+        </template>
+        <template v-if="tabActive === LIST_TAB.PRINT">
+          <div class="form-control">
+            <div class="flex justify-between gap-4 mx-auto w-[740px] max-w-full">
+              <label class="flex items-center cursor-pointer gap-3" v-for="item in LIST_SCAN_TYPES" :key="item.value">
+                <input
+                    type="radio"
+                    class="radio radio-primary"
+                    :value="item.value"
+                    v-model="printTypeSelected"
+                    name="print-type"
+                />
+                <span class="font-semibold text-20px">{{ item.label }}</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-control" v-if="printTypeSelected === DEVICE_TYPES.NETWORK">
+            <label class="label">
+              <span class="label-text">IP</span>
+            </label>
+            <div
+                class="input-connect"
+                :class="{
+                'input-connect--connected': isCurrentTabConnected
+              }"
+            >
+              <input
+                  type="text"
+                  class="input input-bordered w-full pr-[160px]"
+                  v-model="printerNetworkConfig.ip"
+              />
+            </div>
+          </div>
+          <div class="form-control" v-if="printTypeSelected === DEVICE_TYPES.USB">
+            <label class="label">
+              <span class="label-text">Printer model</span>
+            </label>
+            <div
+                class="input-connect"
+                :class="{
+                'input-connect--connected': isCurrentTabConnected
+              }"
+            >
+              <input
+                  type="text"
+                  class="input input-bordered w-full pr-[160px]"
+                  :value="(printerUsbConfig as unknown as PrinterUSBDevice)?.deviceName"
+                  placeholder="Unknown"
+                  readonly
+              />
+            </div>
+          </div>
+          <div class="form-control" v-if="printTypeSelected === DEVICE_TYPES.BLUETOOTH">
+            <label class="label">
+              <span class="label-text">Printer model</span>
+            </label>
+            <div
+                class="input-connect"
+                :class="{
+                'input-connect--connected': isCurrentTabConnected
+              }"
+            >
+              <input
+                  type="text"
+                  class="input input-bordered w-full pr-[160px]"
+                  :value="printerBluetoothConfig?.deviceName"
+                  placeholder="Unknown"
+                  readonly
+              />
+            </div>
+          </div>
+        </template>
+        <div class="form-control grid grid-cols-2 gap-6">
+          <button
+              type="button"
+              class="btn btn-secondary btn-outline"
+              @click="handleScan"
+          >
+            SCAN
+          </button>
           <button
               v-if="isCurrentTabConnected"
               type="button"
-              class="btn btn-primary"
+              class="btn btn-secondary btn-outline"
               @click="handleDisconnect"
           >
-            Disconnect
+            DISCONNECT
           </button>
           <button
               v-else
               type="button"
-              class="btn btn-success"
+              class="btn btn-secondary btn-outline"
               @click="handleConnect"
-              :disabled="isConnectLoading"
+              :disabled="isConnectLoading || !isValidConnect"
           >
             <span class="loading loading-spinner" v-if="isConnectLoading"></span>
-            Connect
+            CONNECT
           </button>
         </div>
       </form>
     </div>
   </modal-base>
-  <modal-scan
-      ref="modalScanRef"
-      @select="handleSelectDevice"
-  />
+  <modal-scan ref="modalScanRef"/>
 </template>
 
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue';
-import {useConnectStore} from '@/stores/connect';
+import {computed, onBeforeUnmount, ref, watchEffect} from 'vue';
+import type {PaxDevice, PrinterNetworkDevice, PrinterUSBDevice} from "@/stores/connect";
+import {DEFAULT_PAX_PORT, DEFAULT_PRINTER_NETWORK_PORT, DEVICE_TYPES, useConnectStore} from "@/stores/connect";
 import handleError from '@/utils/error';
-import {z} from 'zod';
-import {toTypedSchema} from "@vee-validate/zod";
-import {useForm} from "vee-validate";
 import ModalBase from "@/components/modal/ModalBase.vue";
 import ModalScan from '@/components/modal/ModalScan.vue';
 import notification from "@/utils/notification";
@@ -100,112 +170,152 @@ const LIST_TAB = {
 type TabActive = (typeof LIST_TAB)[keyof typeof LIST_TAB];
 const tabActive = ref<TabActive>(LIST_TAB.PAX);
 const handleChangeTab = (tab: TabActive) => {
-  tabActive.value = tab
+  tabActive.value = tab;
+  if (tab === LIST_TAB.PRINT) {
+    printTypeSelected.value = DEVICE_TYPES.NETWORK;
+  }
 }
 
-const paxConfig = computed(() => connectStore.paxConfig);
+const paxStoreConfig = computed(() => connectStore.paxConfig);
 const isPaxConnected = computed(() => connectStore.isPaxConnected);
 
-const printerConfig = computed(() => connectStore.printerConfig);
-const isPrintDeviceConnected = computed(() => connectStore.isPrintDeviceConnected);
+const printerStoreConfig = computed(() => connectStore.printerConfig);
+const isPrinterDeviceConnected = computed(() => connectStore.isPrinterDeviceConnected);
 
-const validationSchema = computed(() => {
-  const schema: any = {
-    ip: z.string().ip('IP address is invalid').nonempty('IP address is required'),
-  }
-  if (tabActive.value === LIST_TAB.PAX) {
-    schema.port = z.string().nonempty('PORT is required');
-  }
-  return toTypedSchema(z.object(schema))
-})
-const {errors, handleSubmit, setFieldValue, resetForm, defineInputBinds, handleReset} = useForm({
-  validationSchema: validationSchema,
+const paxConfig = ref<PaxDevice>({
+  ip: connectStore.paxConfig?.ip || '',
+  port: connectStore.paxConfig?.port || DEFAULT_PAX_PORT
 });
-const ip = defineInputBinds('ip');
-const port = defineInputBinds('port');
+const printerNetworkConfig = ref<PrinterNetworkDevice>({
+  type: DEVICE_TYPES.NETWORK,
+  ip: (connectStore.printerConfig as PrinterNetworkDevice)?.ip || '',
+  port: (connectStore.printerConfig as PrinterNetworkDevice)?.port || DEFAULT_PRINTER_NETWORK_PORT,
+});
 
-watch(tabActive, async (newValue) => {
-  let _values;
-  switch (newValue) {
-    case LIST_TAB.PAX: {
-      if (paxConfig.value && isPaxConnected.value) {
-        _values = {
-          ip: paxConfig.value.ip,
-          port: `${paxConfig.value.port}`,
+const unsubscribe = connectStore.$onAction(
+    ({
+       name,
+       after,
+     }) => {
+      switch (name) {
+        case 'connectPax': {
+          after(() => {
+            paxConfig.value.ip = connectStore.paxConfig?.ip || '';
+            paxConfig.value.port = connectStore.paxConfig?.port || DEFAULT_PAX_PORT;
+          })
+          break;
         }
-      } else {
-        _values = {
-          ip: '',
-          port: '10009'
-        };
-      }
-      break;
-    }
-    case LIST_TAB.PRINT: {
-      if (printerConfig.value && isPrintDeviceConnected.value) {
-        _values = {
-          ip: printerConfig.value.ip,
-          port: `${printerConfig.value.port}`,
+        case 'connectPrinter': {
+          after(() => {
+            printerNetworkConfig.value.ip = (connectStore.printerConfig as PrinterNetworkDevice)?.ip || '';
+            printerNetworkConfig.value.port = (connectStore.printerConfig as PrinterNetworkDevice)?.port || DEFAULT_PRINTER_NETWORK_PORT;
+          })
+          break;
         }
-      } else {
-        _values = {
-          ip: '',
-          port: '9100'
-        };
       }
-      break;
-    }
+    });
+
+onBeforeUnmount(() => {
+  unsubscribe();
+})
+
+const printerUsbConfig = computed(() => {
+  if (connectStore.printerConfig?.type === DEVICE_TYPES.USB) {
+    return connectStore.printerConfig;
   }
-  resetForm({
-    values: _values,
-    errors: {
-      ip: undefined,
-      port: undefined
-    }
-  })
-}, {
-  immediate: true,
+  return null
+});
+const printerBluetoothConfig = computed(() => {
+  if (connectStore.printerConfig?.type === DEVICE_TYPES.BLUETOOTH) {
+    return connectStore.printerConfig;
+  }
+  return null
 });
 
 const isCurrentTabConnected = computed(() => {
   switch (tabActive.value) {
     case LIST_TAB.PAX: {
       return Boolean(
-          paxConfig.value &&
+          paxStoreConfig.value &&
           isPaxConnected.value &&
-          ip.value.value === paxConfig.value.ip &&
-          Number(port.value.value) === Number(paxConfig.value.port)
+          paxConfig.value.ip === paxStoreConfig.value?.ip &&
+          Number(paxConfig.value.port) === Number(paxStoreConfig.value?.port)
       )
     }
     case LIST_TAB.PRINT: {
-      return Boolean(
-          printerConfig.value &&
-          isPrintDeviceConnected.value &&
-          ip.value.value === printerConfig.value.ip
-      )
+      let isConnected = false;
+      switch (printTypeSelected.value) {
+        case DEVICE_TYPES.NETWORK: {
+          isConnected =
+              isPrinterDeviceConnected.value &&
+              printerStoreConfig.value?.type === printerNetworkConfig.value?.type &&
+              printerNetworkConfig.value.ip === (printerStoreConfig.value as PrinterNetworkDevice)?.ip &&
+              Number(printerNetworkConfig.value.port) === Number((printerStoreConfig.value as PrinterNetworkDevice)?.port);
+          break;
+        }
+        case DEVICE_TYPES.USB: {
+          isConnected = isPrinterDeviceConnected.value && printerStoreConfig.value?.type === printerUsbConfig.value?.type;
+          break;
+        }
+        case DEVICE_TYPES.BLUETOOTH: {
+          isConnected = isPrinterDeviceConnected.value && printerStoreConfig.value?.type === printerBluetoothConfig.value?.type;
+          break;
+        }
+      }
+      return isConnected;
     }
-    default:
+    default: {
       return false;
+    }
+  }
+});
+const LIST_SCAN_TYPES = [
+  {
+    label: 'Network printer',
+    value: DEVICE_TYPES.NETWORK,
+  },
+  {
+    label: 'USB Printer',
+    value: DEVICE_TYPES.USB,
+  },
+  {
+    label: 'Bluetooth',
+    value: DEVICE_TYPES.BLUETOOTH,
+  },
+];
+const printTypeSelected = ref(LIST_SCAN_TYPES[0].value);
+
+const isValidConnect = computed(() => {
+  switch (tabActive.value) {
+    case LIST_TAB.PAX: {
+      return paxConfig.value.ip && paxConfig.value.port;
+    }
+    case LIST_TAB.PRINT: {
+      if (printTypeSelected.value === DEVICE_TYPES.NETWORK) {
+        return printerNetworkConfig.value.ip && printerNetworkConfig.value.port;
+      }
+      return false;
+    }
+    default: {
+      return false;
+    }
   }
 });
 
-const PORT_PRINTER = 9100;
 const isConnectLoading = ref(false);
-const handleConnect = handleSubmit(async (values) => {
+const handleConnect = async () => {
   try {
     isConnectLoading.value = true;
-    if (tabActive.value === LIST_TAB.PAX) {
-      await connectStore.connectPax({
-        ip: values.ip!,
-        port: Number(values.port),
-      });
-    } else if (tabActive.value === LIST_TAB.PRINT) {
-      await connectStore.connectPrinter({
-        ip: values.ip!,
-        port: PORT_PRINTER,
-      });
+    switch (tabActive.value) {
+      case LIST_TAB.PAX: {
+        await connectStore.connectPax(paxConfig.value);
+        break;
+      }
+      case LIST_TAB.PRINT: {
+        await connectStore.connectPrinter(printerNetworkConfig.value);
+        break;
+      }
     }
-    // hide();
     notification.success({
       message: 'Connect success'
     });
@@ -214,39 +324,71 @@ const handleConnect = handleSubmit(async (values) => {
   } finally {
     isConnectLoading.value = false;
   }
-});
-const handleDisconnect = () => {
-  if (tabActive.value === 'Pax') {
-    connectStore.clearPaxConfig();
-  }
-  if (tabActive.value === 'Print') {
-    connectStore.clearPrinterConfig();
-  }
-  handleReset();
 }
-const handleSelectDevice = async (newIp: string) => {
-  setFieldValue('ip', newIp);
-  handleConnect();
-};
+const handleDisconnect = () => {
+  try {
+    if (tabActive.value === LIST_TAB.PAX) {
+      connectStore.clearPaxConfig();
+    }
+    if (tabActive.value === LIST_TAB.PRINT) {
+      connectStore.clearPrinterConfig();
+    }
+  } catch (error) {
+    handleError({error});
+  }
+}
+
+
+const scanType = computed(() => {
+  if (tabActive.value === LIST_TAB.PAX) {
+    return DEVICE_TYPES.PAX;
+  }
+  return printTypeSelected.value;
+});
 const modalScanRef = ref<InstanceType<typeof ModalScan> | null>(null);
 const handleScan = () => {
-  const scanPort = tabActive.value === LIST_TAB.PAX ? port.value.value : PORT_PRINTER;
-  modalScanRef.value?.show(Number(scanPort));
+  const scanPort = tabActive.value === LIST_TAB.PAX ? paxConfig.value.port : printerNetworkConfig.value.port;
+  modalScanRef.value?.show(scanPort, scanType.value);
 };
 const modalRef = ref<InstanceType<typeof ModalBase> | null>(null);
 const show = () => {
-  resetForm();
   tabActive.value = LIST_TAB.PAX;
   modalRef.value?.show();
-}
+};
 const hide = () => {
   modalRef.value?.hide();
-}
+};
 defineExpose({
   show,
   hide,
 });
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
+.input-connect {
+  position: relative;
+
+  &::after {
+    content: 'Disconnect';
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    color: var(--error);
+    height: 100%;
+  }
+
+  &--connected {
+    &::after {
+      content: 'Connected';
+      color: var(--success);
+    }
+  }
+}
 </style>
+
+<!-- TODO: Fix still show disconnect text -->

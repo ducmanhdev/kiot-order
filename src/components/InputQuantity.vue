@@ -1,37 +1,31 @@
 <template>
-  <div class="flex items-center" :class="{'w-[140px]': small}">
+  <div class="quantity" :class="{'quantity--sm': small}">
     <div
         role="button"
-        class="btn btn-white btn-square shadow-[1px_1px_6px_0_rgba(0,0,0,0.25)]"
+        class="quantity__btn"
         @click.prevent="handleDecrement"
         :class="{
-          'pointer-events-none': counter <= min,
-          'w-10 h-10 min-h-[40px]': small
+          'disabled': min && counter <= min,
         }"
     >
-      <img src="@/assets/images/icon-minus.svg" alt="" :class="{'w-5': small }">
+      <img src="@/assets/images/icon-minus.svg" alt="">
     </div>
     <input
-        type="text"
-        class="w-[calc(100%-60px*2)] input input-ghost bg-transparent text-center text-26px font-bold border-0 focus:!shadow-[none] focus:outline-0 px-4"
-        :class="{
-           '!w-[calc(100%-40px*2)] !h-10 !text-16px !px-1': small,
-        }"
-        :min="min"
-        :max="max"
+        type="number"
+        class="quantity__input"
         v-model.number="counter"
         v-input-number="{min, max}"
+        disabled
     >
     <div
         role="button"
-        class="btn btn-white btn-square shadow-[1px_1px_6px_0_rgba(0,0,0,0.25)]"
+        class="quantity__btn"
         @click.prevent="handleIncrement"
         :class="{
-          'pointer-events-none': max && counter >= max,
-          'w-10 h-10 min-h-[40px]': small
+          'disabled': max && counter >= max,
         }"
     >
-      <img src="@/assets/images/icon-plus.svg" alt="" :class="{'w-5': small }">
+      <img src="@/assets/images/icon-plus.svg" alt="">
     </div>
   </div>
 </template>
@@ -90,15 +84,63 @@ const handleIncrement = () => {
 }
 </script>
 
-<style scoped>
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+<style lang="scss" scoped>
+.quantity {
+  --btn-size: 60px;
+  --btn-radius: 14px;
+  --btn-shadow: 1px 1px 8px 0 #00000040;
+  --input-font-size: 24px;
+  display: flex;
+  width: 214px;
+  height: var(--btn-size);
 
-/* Firefox */
-input[type=number] {
-  -moz-appearance: textfield;
+  &--sm {
+    width: 140px;
+    --btn-size: 40px;
+    --btn-radius: 10px;
+    --btn-shadow: 1px 1px 6px 0 #00000040;
+    --input-font-size: 16px;
+  }
+
+  &__btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: var(--btn-shadow);
+    width: var(--btn-size);
+    height: var(--btn-size);
+    border-radius: var(--btn-radius);
+    background-color: #fff;
+    color: #000;
+
+    &.disabled {
+      pointer-events: none;
+      //opacity: 0.5;
+    }
+
+    > img {
+      display: block;
+      width: 50%;
+    }
+  }
+
+  &__input {
+    width: calc(100% - var(--btn-size) * 2);
+    padding: 4px;
+    border: 0;
+    background-color: transparent;
+    outline: none;
+    appearance: none;
+    text-align: center;
+    font-weight: 600;
+    font-size: var(--input-font-size);
+    -moz-appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
 }
 </style>

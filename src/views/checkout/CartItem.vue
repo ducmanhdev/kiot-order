@@ -1,13 +1,13 @@
 <template>
   <div class="grid grid-cols-[90px_1fr_210px_210px_40px] gap-7 items-start cursor-pointer">
-    <div class="w-[90px] aspect-square rounded-[10px] overflow-hidden shadow-[1px_1px_8px_0_rgba(0,0,0,0.15)] bg-white">
+    <div class="w-[90px] aspect-square rounded-[10px] overflow-hidden shadow-[1px_1px_8px_0_rgba(0,0,0,0.15)] bg-white flex items-center justify-center">
       <img :src="data?.image" alt="" class="w-ful h-full object-contain" v-if="data?.image">
       <img src="@/assets/images/order/food-empty.png" alt="" class="w-ful h-full object-contain" v-else>
     </div>
     <div class="text-24px">
-      <h5 class="text-32px font-medium mb-1">{{ data?.name }}</h5>
+      <h5 class="text-28px 2xl:text-32px font-medium mb-1">{{ data?.name }}</h5>
       <p class="mb-2">
-        <span class="font-semibold mr-2">{{ FormatHelper.formatShownPrice(priceSubTotalOfCartItem) }}</span>
+        <span class="font-semibold mr-2">{{ FormatHelper.formatShownPrice(data?.price) }}</span>
       </p>
       <div class="space-y-0.5 italic">
         <p>{{ data?.item_variant?.name }}</p>
@@ -23,7 +23,7 @@
       </div>
     </div>
     <input-quantity v-model="quantity" @click.stop/>
-    <p class="text-32px font-semibold min-h-[60px] flex items-center justify-center text-center">
+    <p class="text-28px 2xl:text-32px font-semibold min-h-[60px] flex items-center justify-center text-center">
       {{ FormatHelper.formatShownPrice(priceTotalOfCartItem) }}
     </p>
     <button class="shrink-0 min-h-[60px]" @click.stop="handleDelete">
@@ -65,7 +65,7 @@ const quantity = computed({
 const handleDelete = () => {
   emits('delete', props.data.cart_id);
 };
-const priceSubTotalOfCartItem = computed(() => (orderStore as any).priceSubTotalOfCartItem(props.data?.cart_id));
+// const priceSubTotalOfCartItem = computed(() => (orderStore as any).priceSubTotalOfCartItem(props.data?.cart_id));
 const priceTotalOfCartItem = computed(() => (orderStore as any).priceTotalOfCartItem(props.data?.cart_id));
 </script>
 

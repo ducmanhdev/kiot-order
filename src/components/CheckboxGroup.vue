@@ -19,7 +19,7 @@
           <input v-bind="inputOptions" :value="option" v-model="value"/>
           <span class="">{{ option[labelKey] }}</span>
         </span>
-        <span class="text-right text-gray3">{{ FormatHelper.formatShownPrice(option[priceKey]) }}</span>
+        <span class="text-right text-gray3">+{{FormatHelper.formatShownPrice(option[priceKey])}}</span>
       </label>
     </div>
   </div>

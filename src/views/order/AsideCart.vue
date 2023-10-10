@@ -1,13 +1,11 @@
 <template>
-  <aside class="flex flex-col p-7 2xl:p-9 overflow-y-auto overflow-x-hidden">
+  <aside class="laptop:flex hidden flex-col p-6 lg:p-7 2xl:p-9 overflow-y-auto overflow-x-hidden">
     <div class="shrink-0 flex justify-between items-center pb-4 border-b border-gray3">
       <p class="text-32px font-bold">Order</p>
       <div class="relative mr-6">
         <img src="@/assets/images/order/shopping-cart.svg" alt="">
-        <div class="absolute top-[-14px] right-[-26px] w-9 h-9 rounded-full bg-[#C9202C] flex-center">
-          <p class="text-white font-semibold" :class="cartQuantity >= 10 ? 'text-20px' : 'text-2xl'">{{
-              cartQuantity
-            }}</p>
+        <div class="absolute top-[-14px] right-[-26px] w-9 h-9 rounded-full bg-primary flex-center text-white font-semibold text-20px 2xl:text-24px">
+          {{ cartQuantity }}
         </div>
       </div>
     </div>

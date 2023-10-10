@@ -2,13 +2,13 @@
   <div class="py-7">
     <div class="flex items-start">
       <div class="shrink-0 w-[90px] bg-white shadow-[1px_1px_8px_0_rgba(0,0,0,0.15)] rounded-[10px] overflow-hidden aspect-square">
-        <img class="w-full h-full object-cover" :src="data.image" alt="" v-if="data.image">
+        <img class="w-full h-full object-contain" :src="data.image" alt="" v-if="data.image">
         <img class="w-full h-full object-cover" src="@/assets/images/order/food-empty.png" alt="" v-else>
       </div>
       <div class="grow pl-4">
         <div class="flex">
           <div class="grow-1">
-            <p class="text-24px font-medium mb-2">{{ data.name }}</p>
+            <p class="text-24px font-medium w-break-words mb-2">{{ data.name }}</p>
           </div>
           <div class="shrink-0 text-24px font-semibold pl-4">{{ FormatHelper.formatShownPrice(price) }}</div>
           <div class="shrink-0 pl-2">

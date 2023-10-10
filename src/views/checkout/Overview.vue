@@ -1,6 +1,6 @@
 <template>
   <layout title="Overview" :back-route="{name: 'order'}">
-    <div class="py-[40px] px-[100px] min-h-full flex flex-col">
+    <div class="p-10 2xl:px-[100px] min-h-full flex flex-col">
       <div class="shrink-0 text-center py-10" v-if="isCartEmpty">
         <img src="@/assets/images/empty-cart.png" alt="" class="block w-[200px] h-auto mx-auto mb-4">
         <p class="text-28px text-gray3 font-medium">YOUR CART IS EMPTY</p>
@@ -31,31 +31,21 @@
           </div>
         </div>
         <div class="shrink-0 flex items-center justify-between py-7 gap-7 border-t">
-          <router-link :to="{name: 'order'}"
-                       class="text-secondary text-32px font-bold inline-flex items-center gap-4">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                  d="M30 55C43.8071 55 55 43.8071 55 30C55 16.1929 43.8071 5 30 5C16.1929 5 5 16.1929 5 30C5 43.8071 16.1929 55 30 55Z"
-                  stroke="#FF7731" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M30 20V40" stroke="#FF7731" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M20 30H40" stroke="#FF7731" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+          <router-link :to="{name: 'order'}" class="text-secondary text-28px 2xl:text-32px font-bold inline-flex items-center gap-4">
+            <img class="w-[44px] 2xl:w-[60px]" src="@/assets/images/icon-add-more.svg" alt="">
             Add more
           </router-link>
-          <div class="flex items-center gap-4">
-            <div class="relative pr-6">
-              <img src="@/assets/images/icon-cart.svg" alt="">
-              <div
-                  class="absolute -top-1/2 right-0 min-w-[36px] h-[36px] bg-primary text-white rounded-full text-24px font-semibold text-center"
-              >
-                {{ cartQuantity }}
-              </div>
-            </div>
-            <p class="text-40px font-medium">Total: <strong>{{ FormatHelper.formatShownPrice(priceTotal) }}</strong></p>
+          <div class="w-[400px] text-28px 2xl:text-32px font-medium">
+            <div class="flex justify-between gap-4">Quantity: <strong>{{ cartQuantity }}</strong></div>
+            <div class="flex justify-between gap-4">Subtotal: <strong>{{FormatHelper.formatShownPrice(priceSubtotal)}}</strong></div>
+            <div class="flex justify-between gap-4">Tax: <strong>{{
+                  FormatHelper.formatShownPrice(tax)
+                }}</strong></div>
+            <div class="flex justify-between gap-4">Total: <strong>{{ FormatHelper.formatShownPrice(priceTotal)}}</strong></div>
           </div>
         </div>
       </template>
-      <div class="shrink-0 text-center !pt-[84px] border-t">
+      <div class="shrink-0 text-center pt-10 2xl:pt-[84px] border-t">
         <button
             type="button"
             class="btn btn-success w-[430px]"
@@ -85,6 +75,8 @@ const cartList = computed(() => orderStore.cartList);
 const cartQuantity = computed(() => (orderStore as any).cartQuantity);
 const isCartEmpty = computed(() => (orderStore as any).isCartEmpty);
 const priceTotal = computed(() => (orderStore as any).priceTotal);
+const priceSubtotal = computed(() => (orderStore as any).priceSubtotal);
+const tax = computed(() => (orderStore as any).tax);
 
 const handleShowModalAddCart = (data: CategoryItem) => {
   orderStore.showModalAddCart(data)

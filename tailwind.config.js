@@ -46,7 +46,10 @@ export default {
             "46px": "46px",
             "50px": "50px",
             "60px": "60px",
-          },
+        },
+        screens: {
+            'laptop': '1081px',
+        }
     },
     daisyui: {
         themes: [

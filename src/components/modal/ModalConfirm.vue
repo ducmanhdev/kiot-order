@@ -6,7 +6,7 @@
       @after-close="handleAfterClose()"
   >
     <div class="p-[60px]">
-      <h4 class="lg:text-[36px] font-semibold text-center mb-6" v-text="message"></h4>
+      <h4 class="text-32px lg:text-[36px] font-semibold text-center mb-6" v-text="message"></h4>
       <div class="flex justify-center gap-3">
         <button type="button" class="btn-wide" :class="cancelStyle" @click="handleCancel">{{ cancelTitle }}</button>
         <button type="button" class="btn-wide" :class="acceptStyle" @click="handleAccept">{{ acceptTitle }}</button>
